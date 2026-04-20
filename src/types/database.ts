@@ -4,10 +4,10 @@ export interface MasterClient {
   id: string; // UUID
   business_name: string;
   subdomain: string;
-  schema_name: string; // IMPORTANTE para Lambda
-  db_connection_url?: string | null;
+  db_connection_url: string;
   is_active: boolean;
   created_at: string; // TIMESTAMPTZ
+  updated_at: string; // TIMESTAMPTZ
 }
 
 export interface MasterUser {
@@ -17,6 +17,41 @@ export interface MasterUser {
   client_id: string; // UUID - Relación con MasterClient
   is_active: boolean;
   created_at: string; // TIMESTAMPTZ
+}
+
+export interface MasterModule {
+  id: string; // UUID
+  key_name: string;
+  display_name: string;
+  description?: string;
+  min_software_version: string;
+  created_at: string; // TIMESTAMPTZ
+}
+
+export interface MasterClientModule {
+  client_id: string; // UUID
+  module_id: string; // UUID
+  activated_at: string; // TIMESTAMPTZ
+  is_trial: boolean;
+}
+
+export interface MasterSoftwareRelease {
+  id: string; // UUID
+  version_number: string;
+  release_date: string; // TIMESTAMPTZ
+  download_url: string;
+  is_critical: boolean;
+  changelog?: string;
+  is_public: boolean;
+}
+
+export interface MasterSyncLog {
+  id: string; // UUID
+  client_id?: string; // UUID
+  sync_type: string;
+  status: string;
+  error_message?: string;
+  finished_at: string; // TIMESTAMPTZ
 }
 
 export interface License {

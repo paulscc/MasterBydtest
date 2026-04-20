@@ -1,41 +1,84 @@
 -- ==========================================================
--- MIGRACIÓN PARA SISTEMA MAESTRO MULTI-TENANT
+-- MIGRACIÓN PARA SISTEMA MAESTRO MULTI-TENANT COMPLETO
 -- ==========================================================
 -- Ejecutar este script en Supabase SQL Editor para actualizar la BD
 
 -- 1. EXTENSIONES (Asegura que podamos generar UUIDs aleatorios)
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
--- 1. Intentamos activar la extensión por si acaso (opcional en versiones nuevas)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "postgis";
 
 -- 2. TABLA DE CLIENTES MAESTROS (TENANTS)
 CREATE TABLE IF NOT EXISTS public.master_clients (
-    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    business_name character varying(255) NOT NULL,
-    subdomain character varying(100) UNIQUE NOT NULL,
-    schema_name character varying(63) UNIQUE NOT NULL, -- IMPORTANTE para tu Lambda
-    db_connection_url text, -- Por si en el futuro escalas a otra instancia
-    is_active boolean DEFAULT true,
-    created_at timestamp with time zone DEFAULT now()
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    business_name character varying NOT NULL,
+    subdomain character varying NOT NULL UNIQUE,
+    db_connection_url text NOT NULL,
+    is_active boolean NOT NULL DEFAULT true,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    updated_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT master_clients_pkey PRIMARY KEY (id)
 );
 
--- 3. TABLA DE USUARIOS MAESTROS (Centraliza el Login)
--- Usamos gen_random_uuid() que es nativo de Postgres 13+
+-- 3. TABLA DE MÓDULOS MAESTROS
+CREATE TABLE IF NOT EXISTS public.master_modules (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    key_name character varying NOT NULL UNIQUE,
+    display_name character varying NOT NULL,
+    description text,
+    min_software_version character varying DEFAULT '1.0.0'::character varying,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    CONSTRAINT master_modules_pkey PRIMARY KEY (id)
+);
+
+-- 4. TABLA DE RELACIÓN CLIENTE-MÓDULOS
+CREATE TABLE IF NOT EXISTS public.master_client_modules (
+    client_id uuid NOT NULL,
+    module_id uuid NOT NULL,
+    activated_at timestamp with time zone DEFAULT now(),
+    is_trial boolean DEFAULT false,
+    CONSTRAINT master_client_modules_pkey PRIMARY KEY (client_id, module_id),
+    CONSTRAINT master_client_modules_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.master_clients(id),
+    CONSTRAINT master_client_modules_module_id_fkey FOREIGN KEY (module_id) REFERENCES public.master_modules(id)
+);
+
+-- 5. TABLA DE RELEASES DE SOFTWARE
+CREATE TABLE IF NOT EXISTS public.master_software_releases (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    version_number character varying NOT NULL,
+    release_date timestamp with time zone DEFAULT now(),
+    download_url text NOT NULL,
+    is_critical boolean DEFAULT false,
+    changelog text,
+    is_public boolean DEFAULT true,
+    CONSTRAINT master_software_releases_pkey PRIMARY KEY (id)
+);
+
+-- 6. TABLA DE USUARIOS MAESTROS (Centraliza el Login)
 CREATE TABLE IF NOT EXISTS public.master_users (
-    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-    email character varying(255) UNIQUE NOT NULL,
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    email character varying NOT NULL UNIQUE,
     password_hash text NOT NULL,
-    client_id uuid NOT NULL, -- Relación con master_clients
+    client_id uuid NOT NULL,
     is_active boolean DEFAULT true,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT master_users_pkey PRIMARY KEY (id),
+    CONSTRAINT fk_master_client FOREIGN KEY (client_id) REFERENCES public.master_clients(id)
 );
 
--- 4. Agregar la llave foránea (después de crear ambas tablas)
-ALTER TABLE public.master_users 
-ADD CONSTRAINT IF NOT EXISTS fk_master_client 
-FOREIGN KEY (client_id) REFERENCES public.master_clients(id) ON DELETE CASCADE;
+-- 7. TABLA DE LOGS DE SINCRONIZACIÓN
+CREATE TABLE IF NOT EXISTS public.master_sync_logs (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    client_id uuid,
+    sync_type character varying,
+    status character varying,
+    error_message text,
+    finished_at timestamp with time zone DEFAULT now(),
+    CONSTRAINT master_sync_logs_pkey PRIMARY KEY (id),
+    CONSTRAINT master_sync_logs_client_id_fkey FOREIGN KEY (client_id) REFERENCES public.master_clients(id)
+);
 
--- 5. TABLA DE LICENCIAS (Mantiene compatibilidad con código existente)
+-- 8. TABLA DE LICENCIAS (Mantiene compatibilidad con código existente)
 CREATE TABLE IF NOT EXISTS public.licenses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     client_id UUID UNIQUE REFERENCES public.master_clients(id) ON DELETE CASCADE,
@@ -47,11 +90,16 @@ CREATE TABLE IF NOT EXISTS public.licenses (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 6. ÍNDICES (Para que el sistema sea rápido al buscar licencias o correos)
+-- 9. ÍNDICES (Para que el sistema sea rápido al buscar datos)
 CREATE INDEX IF NOT EXISTS idx_licenses_api_key ON public.licenses(api_key);
 CREATE INDEX IF NOT EXISTS idx_master_users_email ON public.master_users(email);
 CREATE INDEX IF NOT EXISTS idx_master_clients_subdomain ON public.master_clients(subdomain);
 CREATE INDEX IF NOT EXISTS idx_master_users_client_id ON public.master_users(client_id);
+CREATE INDEX IF NOT EXISTS idx_master_modules_key_name ON public.master_modules(key_name);
+CREATE INDEX IF NOT EXISTS idx_master_client_modules_client_id ON public.master_client_modules(client_id);
+CREATE INDEX IF NOT EXISTS idx_master_client_modules_module_id ON public.master_client_modules(module_id);
+CREATE INDEX IF NOT EXISTS idx_master_sync_logs_client_id ON public.master_sync_logs(client_id);
+CREATE INDEX IF NOT EXISTS idx_master_sync_logs_status ON public.master_sync_logs(status);
 
 -- 7. AUTOMATIZACIÓN DE 'UPDATED_AT'
 -- Función que actualiza la fecha automáticamente cuando editas una licencia.
