@@ -4,12 +4,12 @@ import '../clients/Clients.css';
 
 export default async function LicensesPage() {
   const [{ data: licenses, error: licensesError }, { data: clients, error: clientsError }] = await Promise.all([
-    supabaseAdmin.from('licenses').select('client_id, id, api_key, status, modules, expires_at, created_at, clients!inner(name)').order('created_at', { ascending: false }),
+    supabaseAdmin.from('licenses').select('*, clients(name)').order('updated_at', { ascending: false }),
     supabaseAdmin.from('clients').select('id, name').order('name', { ascending: true })
   ]);
 
   if (licensesError) {
-    return <div style={{ padding: '2rem', color: 'var(--danger)' }}>Error loading licenses</div>;
+    return <div style={{ padding: '2rem', color: 'var(--danger)' }}>Error loading licenses: {licensesError.message}</div>;
   }
 
   return (

@@ -1,4 +1,5 @@
 import { Bell, UserCircle } from 'lucide-react';
+import VersionBadge from './VersionBadge';
 import './Topbar.css';
 
 export default function Topbar() {
@@ -8,6 +9,7 @@ export default function Topbar() {
         {/* Minimal Search Placeholder Placeholder */}
       </div>
       <div className="topbar-actions">
+        <VersionBadge />
         <button className="icon-btn">
           <Bell size={20} />
         </button>

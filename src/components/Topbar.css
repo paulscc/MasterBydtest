@@ -45,3 +45,33 @@
 .user-profile:hover {
   color: var(--text-primary);
 }
+
+/* Version Badge Styles */
+.version-badge {
+  display: flex;
+  align-items: center;
+}
+
+.version-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: var(--background-secondary);
+  border: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.version-btn:hover {
+  background-color: var(--background-hover);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.version-text {
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+}

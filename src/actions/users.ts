@@ -8,17 +8,15 @@ export async function createUser(formData: FormData) {
   const client_id = formData.get('client_id') as string;
   const email = formData.get('email') as string;
   const password = formData.get('password') as string;
-  const full_name = formData.get('full_name') as string;
-  const role = formData.get('role') as string;
+  const is_active = formData.get('is_active') === 'true';
 
   const password_hash = await bcrypt.hash(password, 10);
 
-  const { error } = await supabaseAdmin.from('users').insert({
-    client_id: client_id || null,
+  const { error } = await supabaseAdmin.from('master_users').insert({
+    client_id,
     email,
     password_hash,
-    full_name,
-    role
+    is_active
   });
 
   if (error) return { error: error.message };
@@ -29,17 +27,11 @@ export async function createUser(formData: FormData) {
 }
 
 export async function updateUser(id: string, formData: FormData) {
-  const client_id = formData.get('client_id') as string;
   const email = formData.get('email') as string;
-  const full_name = formData.get('full_name') as string;
-  const role = formData.get('role') as string;
   const is_active = formData.get('is_active') === 'true';
 
   const updates: any = {
-    client_id: client_id || null,
     email,
-    full_name,
-    role,
     is_active
   };
 
@@ -48,7 +40,7 @@ export async function updateUser(id: string, formData: FormData) {
     updates.password_hash = await bcrypt.hash(password, 10);
   }
 
-  const { error } = await supabaseAdmin.from('users').update(updates).eq('id', id);
+  const { error } = await supabaseAdmin.from('master_users').update(updates).eq('id', id);
 
   if (error) return { error: error.message };
 
@@ -57,9 +49,31 @@ export async function updateUser(id: string, formData: FormData) {
 }
 
 export async function deleteUser(id: string) {
-  const { error } = await supabaseAdmin.from('users').delete().eq('id', id);
+  const { error } = await supabaseAdmin.from('master_users').delete().eq('id', id);
   if (error) return { error: error.message };
   revalidatePath('/users');
   revalidatePath('/');
   return { success: true };
+}
+
+export async function getUsersByClient(clientId: string) {
+  const { data, error } = await supabaseAdmin
+    .from('master_users')
+    .select('*')
+    .eq('client_id', clientId)
+    .order('created_at', { ascending: false });
+
+  if (error) return { error: error.message };
+  return { data };
+}
+
+export async function getUserByEmail(email: string) {
+  const { data, error } = await supabaseAdmin
+    .from('master_users')
+    .select('*')
+    .eq('email', email)
+    .single();
+
+  if (error) return { error: error.message };
+  return { data };
 }
