@@ -4,8 +4,8 @@ import '../clients/Clients.css';
 
 export default async function UsersPage() {
   const [{ data: users, error: usersError }, { data: clients, error: clientsError }] = await Promise.all([
-    supabaseAdmin.from('users').select('*, clients(name)').order('created_at', { ascending: false }),
-    supabaseAdmin.from('clients').select('id, name').order('name', { ascending: true })
+    supabaseAdmin.from('master_users').select('*, master_clients(business_name)').order('created_at', { ascending: false }),
+    supabaseAdmin.from('master_clients').select('id, business_name').order('business_name', { ascending: true })
   ]);
 
   if (usersError) {
@@ -26,25 +26,25 @@ export default async function UsersPage() {
         <table className="table">
           <thead>
             <tr>
-              <th>Name</th>
               <th>Email</th>
               <th>Client</th>
-              <th>Role</th>
               <th>Status</th>
+              <th>Created At</th>
               <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {(users || []).map((user: any) => (
               <tr key={user.id}>
-                <td style={{ fontWeight: 500 }}>{user.full_name}</td>
-                <td style={{ color: 'var(--text-secondary)' }}>{user.email}</td>
-                <td>{user.clients?.name || 'Unassigned (Global)'}</td>
-                <td style={{ textTransform: 'capitalize' }}>{user.role}</td>
+                <td style={{ fontWeight: 500 }}>{user.email}</td>
+                <td>{user.master_clients?.business_name || 'Unassigned'}</td>
                 <td>
                   <span className={`badge ${user.is_active ? 'badge-success' : 'badge-danger'}`}>
                     {user.is_active ? 'Active' : 'Inactive'}
                   </span>
+                </td>
+                <td style={{ color: 'var(--text-secondary)' }}>
+                  {new Date(user.created_at).toLocaleDateString()}
                 </td>
                 <td style={{ textAlign: 'right' }}>
                   <UserActions mode="edit" user={user} clients={clients || []} />
@@ -54,7 +54,7 @@ export default async function UsersPage() {
             ))}
             {(!users || users.length === 0) && (
               <tr>
-                <td colSpan={6} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+                <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
                   No users found.
                 </td>
               </tr>

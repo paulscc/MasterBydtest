@@ -29,7 +29,7 @@ export default function ClientActions({ mode, client }: { mode: 'create' | 'edit
   }
 
   async function handleDelete() {
-    if (confirm(`Are you sure you want to delete ${client.name}?`)) {
+    if (confirm(`Are you sure you want to delete ${client.business_name}?`)) {
       setLoading(true);
       const res = await deleteClient(client.id);
       if (res?.error) alert(res.error);
@@ -66,16 +66,28 @@ export default function ClientActions({ mode, client }: { mode: 'create' | 'edit
             </div>
             <form onSubmit={handleSubmit} style={{ marginTop: '1.5rem' }}>
               <div className="form-group">
-                <label className="form-label">Name</label>
-                <input name="name" className="form-input" required defaultValue={client?.name} placeholder="e.g. Mármoles del Norte" />
+                <label className="form-label">Business Name</label>
+                <input name="business_name" className="form-input" required defaultValue={client?.business_name} placeholder="e.g. Mármoles del Norte" />
               </div>
               <div className="form-group">
-                <label className="form-label">Slug</label>
-                <input name="slug" className="form-input" required defaultValue={client?.slug} placeholder="e.g. marmoles-norte" />
+                <label className="form-label">Subdomain</label>
+                <input name="subdomain" className="form-input" required defaultValue={client?.subdomain} placeholder="e.g. marmoles-norte" />
               </div>
+              {mode === 'create' && (
+                <>
+                  <div className="form-group">
+                    <label className="form-label">Admin Email</label>
+                    <input name="admin_email" type="email" className="form-input" required placeholder="admin@company.com" />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Admin Password</label>
+                    <input name="admin_password" type="password" className="form-input" required placeholder="Create admin password" />
+                  </div>
+                </>
+              )}
               <div className="form-group">
-                <label className="form-label">DB Connection String (Optional)</label>
-                <input name="db_connection_string" className="form-input" defaultValue={client?.db_connection_string} placeholder="postgresql://..." />
+                <label className="form-label">DB Connection String</label>
+                <input name="db_connection_url" className="form-input" defaultValue={client?.db_connection_url} placeholder="postgresql://..." />
               </div>
               {mode === 'edit' && (
                 <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

@@ -3,7 +3,7 @@ import ClientActions from './ClientActions';
 import './Clients.css';
 
 export default async function ClientsPage() {
-  const { data: clients, error } = await supabaseAdmin.from('clients').select('*').order('created_at', { ascending: false });
+  const { data: clients, error } = await supabaseAdmin.from('master_clients').select('*').order('created_at', { ascending: false });
 
   if (error) {
     return <div style={{ padding: '2rem', color: 'var(--danger)' }}>Error loading clients: {error.message}</div>;
@@ -23,8 +23,8 @@ export default async function ClientsPage() {
         <table className="table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Slug</th>
+              <th>Business Name</th>
+              <th>Subdomain</th>
               <th>Status</th>
               <th>Created At</th>
               <th style={{ textAlign: 'right' }}>Actions</th>
@@ -33,8 +33,8 @@ export default async function ClientsPage() {
           <tbody>
             {(clients || []).map((client: any) => (
               <tr key={client.id}>
-                <td style={{ fontWeight: 500 }}>{client.name}</td>
-                <td style={{ color: 'var(--text-secondary)' }}>{client.slug}</td>
+                <td style={{ fontWeight: 500 }}>{client.business_name}</td>
+                <td style={{ color: 'var(--text-secondary)' }}>{client.subdomain}</td>
                 <td>
                   <span className={`badge ${client.is_active ? 'badge-success' : 'badge-danger'}`}>
                     {client.is_active ? 'Active' : 'Inactive'}

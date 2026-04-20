@@ -4,8 +4,8 @@ import '../clients/Clients.css';
 
 export default async function LicensesPage() {
   const [{ data: licenses, error: licensesError }, { data: clients, error: clientsError }] = await Promise.all([
-    supabaseAdmin.from('licenses').select('*, clients(name)').order('updated_at', { ascending: false }),
-    supabaseAdmin.from('clients').select('id, name').order('name', { ascending: true })
+    supabaseAdmin.from('licenses').select('*, master_clients(business_name)').order('updated_at', { ascending: false }),
+    supabaseAdmin.from('master_clients').select('id, business_name').order('business_name', { ascending: true })
   ]);
 
   if (licensesError) {
@@ -37,7 +37,7 @@ export default async function LicensesPage() {
           <tbody>
             {(licenses || []).map((license: any) => (
               <tr key={license.id}>
-                <td style={{ fontWeight: 500 }}>{license.clients?.name || 'Unknown Client'}</td>
+                <td style={{ fontWeight: 500 }}>{license.master_clients?.business_name || 'Unknown Client'}</td>
                 <td style={{ color: 'var(--text-secondary)' }}>
                   <code style={{ background: 'var(--background)', padding: '0.25rem 0.5rem', borderRadius: '4px' }}>
                     {license.api_key.substring(0, 8)}...
