@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Plus, Edit2, Trash2, X } from 'lucide-react';
 import { createClient, updateClient, deleteClient } from '@/actions/clients';
-import BackendLogin from '@/components/BackendLogin';
+import QuickBackendLogin from '@/components/QuickBackendLogin';
 
 export default function ClientActions({ mode, client }: { mode: 'create' | 'edit' | 'delete', client?: any }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -75,7 +75,7 @@ export default function ClientActions({ mode, client }: { mode: 'create' | 'edit
               <button type="button" onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20}/></button>
             </div>
             
-            {mode === 'create' && <BackendLogin />}
+            {mode === 'create' && <QuickBackendLogin />}
             
             <form onSubmit={handleSubmit} style={{ marginTop: '1.5rem' }}>
               <div className="form-group">

@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { LogIn, LogOut, Shield, Clock, AlertCircle, CheckCircle } from 'lucide-react';
+import { LogIn, LogOut, Shield, Clock, AlertCircle, CheckCircle, Key } from 'lucide-react';
 import { backendAuthService, AdminCredentials } from '@/lib/auth-backend';
 
-export default function BackendLogin() {
+export default function QuickBackendLogin() {
   const [credentials, setCredentials] = useState<AdminCredentials>({
-    email: '',
-    password: ''
+    email: 'admin@company.com',
+    password: 'password'
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +44,15 @@ export default function BackendLogin() {
     backendAuthService.logout();
     setIsAuthenticated(false);
     setError(null);
+  };
+
+  const handleQuickLogin = () => {
+    // Usar credenciales correctas predefinidas
+    const quickCredentials = {
+      email: 'admin@company.com',
+      password: 'password'
+    };
+    setCredentials(quickCredentials);
   };
 
   const user = backendAuthService.getUser();
@@ -94,7 +103,7 @@ export default function BackendLogin() {
         </div>
 
         <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#15803d' }}>
-          Ahora puedes usar los endpoints de creación de esquemas y visualización con autenticación.
+          <strong>¡Conectado!</strong> Ahora puedes usar los endpoints de creación de esquemas y visualización con autenticación.
         </div>
       </div>
     );
@@ -111,7 +120,7 @@ export default function BackendLogin() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
         <AlertCircle size={20} style={{ color: '#ef4444' }} />
         <h4 style={{ margin: 0, color: '#ef4444', fontSize: '1rem' }}>
-          No Autenticado en Backend Externo
+          Conectar al Backend Externo
         </h4>
       </div>
 
@@ -119,6 +128,49 @@ export default function BackendLogin() {
         Para usar los endpoints de creación de esquemas y visualización del backend externo, 
         necesitas iniciar sesión como administrador.
       </p>
+
+      <div style={{
+        padding: '0.75rem',
+        backgroundColor: '#fff7ed',
+        border: '1px solid #fed7aa',
+        borderRadius: '6px',
+        marginBottom: '1rem'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+          <Key size={16} style={{ color: '#ea580c' }} />
+          <h5 style={{ margin: 0, color: '#ea580c', fontSize: '0.875rem' }}>
+            Acceso Rápido
+          </h5>
+        </div>
+        <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.75rem', color: '#9a3412' }}>
+          Usa las credenciales correctas predefinidas:
+        </p>
+        <div style={{ 
+          display: 'flex', 
+          gap: '0.5rem', 
+          alignItems: 'center',
+          fontSize: '0.75rem',
+          color: '#7c2d12'
+        }}>
+          <code style={{ 
+            backgroundColor: '#fed7aa', 
+            padding: '0.25rem 0.5rem', 
+            borderRadius: '4px',
+            fontFamily: 'monospace'
+          }}>
+            admin@company.com
+          </code>
+          <span>/</span>
+          <code style={{ 
+            backgroundColor: '#fed7aa', 
+            padding: '0.25rem 0.5rem', 
+            borderRadius: '4px',
+            fontFamily: 'monospace'
+          }}>
+            password
+          </code>
+        </div>
+      </div>
 
       <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
@@ -153,6 +205,24 @@ export default function BackendLogin() {
             }}
           />
           <button
+            type="button"
+            onClick={handleQuickLogin}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: '#f59e0b',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontSize: '0.875rem'
+            }}
+          >
+            <Key size={16} /> Usar Credenciales Correctas
+          </button>
+          <button
             type="submit"
             disabled={loading}
             style={{
@@ -160,7 +230,7 @@ export default function BackendLogin() {
               alignItems: 'center',
               gap: '0.5rem',
               padding: '0.5rem 1rem',
-              backgroundColor: loading ? '#9ca3af' : '#ef4444',
+              backgroundColor: loading ? '#9ca3af' : '#22c55e',
               color: 'white',
               border: 'none',
               borderRadius: '6px',
@@ -197,7 +267,7 @@ export default function BackendLogin() {
 
       <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#7f1d1d' }}>
         <div>Backend: <strong>https://d2o45auo4j2cpf.cloudfront.net</strong></div>
-        <div>Credenciales correctas: <strong>admin@company.com / password</strong></div>
+        <div>Estado: <strong style={{ color: '#22c55e' }}>Operativo</strong></div>
       </div>
 
       <style jsx>{`

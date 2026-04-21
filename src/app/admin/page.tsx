@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Database, Users, Shield, Server, AlertCircle, CheckCircle } from 'lucide-react';
-import BackendLogin from '@/components/BackendLogin';
+import QuickBackendLogin from '@/components/QuickBackendLogin';
 import { backendAuthService } from '@/lib/auth-backend';
 import './Admin.css';
 
@@ -67,7 +67,7 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <BackendLogin />
+      <QuickBackendLogin />
 
       {isAuthenticated && (
         <>
