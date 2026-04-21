@@ -16,6 +16,7 @@ export class RDSService {
   private client: Client;
 
   constructor() {
+    // Crear nueva instancia de cliente cada vez
     this.client = new Client(AWS_RDS_CONFIG);
   }
 

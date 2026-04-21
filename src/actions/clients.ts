@@ -2,7 +2,7 @@
 
 import { supabaseAdmin } from '@/lib/supabase';
 import { revalidatePath } from 'next/cache';
-import { rdsService } from '@/lib/aws-rds';
+import { externalBackendService, CreateSchemaRequest } from '@/lib/external-backend';
 import bcrypt from 'bcryptjs';
 
 export async function createClient(formData: FormData) {
@@ -17,11 +17,33 @@ export async function createClient(formData: FormData) {
   }
 
   try {
-    // 1. Crear el esquema en AWS RDS
-    const schemaName = await rdsService.createClientSchema({
-      subdomain,
-      businessName: business_name
-    });
+    // 1. Crear el esquema usando el backend externo
+    const schemaName = `tenant_${subdomain.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    const clientId = crypto.randomUUID();
+    const userId = crypto.randomUUID();
+
+    const schemaRequest: CreateSchemaRequest = {
+      schemaName,
+      tenantInfo: {
+        clientId,
+        clientName: business_name,
+        databaseUrl: db_connection_url,
+        initialUser: {
+          userId,
+          name: admin_email.split('@')[0], // Extraer nombre del email
+          phone: undefined
+        }
+      }
+    };
+
+    const schemaResult = await externalBackendService.createSchema(schemaRequest);
+
+    if (!schemaResult.success) {
+      return { 
+        error: `Error creando esquema en backend externo: ${schemaResult.error}`,
+        details: schemaResult
+      };
+    }
 
     // 2. Insertar el cliente en la base de datos maestra
     const { data: clientData, error: clientError } = await supabaseAdmin
@@ -88,7 +110,9 @@ export async function createClient(formData: FormData) {
       data: {
         clientId: clientData.id,
         schemaName,
-        message: `Cliente ${business_name} creado exitosamente con esquema ${schemaName}`
+        businessName: business_name,
+        tablesCreated: schemaResult.meta?.tablesCreated || 0,
+        message: `Cliente ${business_name} creado exitosamente con esquema ${schemaName} en backend externo`
       }
     };
 

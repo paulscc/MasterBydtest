@@ -3,14 +3,21 @@ import { createClient } from '@/actions/clients';
 
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
+    let formData: FormData;
     
-    // Convertir JSON a FormData si viene como JSON
-    const body = await request.json().catch(() => null);
-    if (body) {
+    // Detectar si es JSON o FormData
+    const contentType = request.headers.get('content-type') || '';
+    
+    if (contentType.includes('application/json')) {
+      // Es JSON - convertir a FormData
+      const body = await request.json();
+      formData = new FormData();
       Object.entries(body).forEach(([key, value]) => {
         formData.append(key, value as string);
       });
+    } else {
+      // Es FormData - usar directamente
+      formData = await request.formData();
     }
     
     const result = await createClient(formData);

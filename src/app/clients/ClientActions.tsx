@@ -15,7 +15,11 @@ export default function ClientActions({ mode, client }: { mode: 'create' | 'edit
     
     let res;
     if (mode === 'create') {
+      // Crear cliente con esquema automáticamente
       res = await createClient(formData);
+      if (res?.success) {
+        alert(`Cliente "${res.data.businessName}" creado exitosamente con esquema "${res.data.schemaName}"`);
+      }
     } else if (mode === 'edit') {
       res = await updateClient(client.id, formData);
     }
@@ -87,7 +91,19 @@ export default function ClientActions({ mode, client }: { mode: 'create' | 'edit
               )}
               <div className="form-group">
                 <label className="form-label">DB Connection String</label>
-                <input name="db_connection_url" className="form-input" defaultValue={client?.db_connection_url} placeholder="postgresql://..." />
+                <input 
+                  name="db_connection_url" 
+                  className="form-input" 
+                  defaultValue={client?.db_connection_url || process.env.NEXT_PUBLIC_DATABASE_URL || 'database-1.c94i28e4k9f0.us-east-2.rds.amazonaws.com'} 
+                  placeholder="database-1.c94i28e4k9f0.us-east-2.rds.amazonaws.com" 
+                  readOnly={mode === 'create'}
+                  style={{ backgroundColor: mode === 'create' ? '#f5f5f5' : 'white' }}
+                />
+                {mode === 'create' && (
+                  <small style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
+                    Usando la conexión AWS RDS configurada automáticamente
+                  </small>
+                )}
               </div>
               {mode === 'edit' && (
                 <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
