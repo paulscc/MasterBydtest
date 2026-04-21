@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Plus, Edit2, Trash2, X } from 'lucide-react';
 import { createClient, updateClient, deleteClient } from '@/actions/clients';
+import BackendLogin from '@/components/BackendLogin';
 
 export default function ClientActions({ mode, client }: { mode: 'create' | 'edit' | 'delete', client?: any }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,10 +16,15 @@ export default function ClientActions({ mode, client }: { mode: 'create' | 'edit
     
     let res;
     if (mode === 'create') {
-      // Crear cliente con esquema automáticamente
+      // Crear cliente con esquema automáticamente (sistema híbrido)
       res = await createClient(formData);
       if (res?.success) {
-        alert(`Cliente "${res.data.businessName}" creado exitosamente con esquema "${res.data.schemaName}"`);
+        const backend = res.data.message.includes('fallback') ? 'local (fallback)' : 'externo';
+        alert(`Cliente "${res.data.businessName}" creado exitosamente!\n\n` +
+              `Esquema: ${res.data.schemaName}\n` +
+              `Tablas: ${res.data.tablesCreated}\n` +
+              `Backend: ${backend}\n` +
+              `Estado: Activo`);
       }
     } else if (mode === 'edit') {
       res = await updateClient(client.id, formData);
@@ -68,6 +74,9 @@ export default function ClientActions({ mode, client }: { mode: 'create' | 'edit
               <h2>{mode === 'create' ? 'Create Client' : 'Edit Client'}</h2>
               <button type="button" onClick={() => setIsOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}><X size={20}/></button>
             </div>
+            
+            {mode === 'create' && <BackendLogin />}
+            
             <form onSubmit={handleSubmit} style={{ marginTop: '1.5rem' }}>
               <div className="form-group">
                 <label className="form-label">Business Name</label>
@@ -89,22 +98,43 @@ export default function ClientActions({ mode, client }: { mode: 'create' | 'edit
                   </div>
                 </>
               )}
-              <div className="form-group">
-                <label className="form-label">DB Connection String</label>
-                <input 
-                  name="db_connection_url" 
-                  className="form-input" 
-                  defaultValue={client?.db_connection_url || process.env.NEXT_PUBLIC_DATABASE_URL || 'database-1.c94i28e4k9f0.us-east-2.rds.amazonaws.com'} 
-                  placeholder="database-1.c94i28e4k9f0.us-east-2.rds.amazonaws.com" 
-                  readOnly={mode === 'create'}
-                  style={{ backgroundColor: mode === 'create' ? '#f5f5f5' : 'white' }}
-                />
-                {mode === 'create' && (
+              {mode === 'create' && (
+                <div className="form-group">
+                  <div style={{ 
+                    padding: '1rem', 
+                    backgroundColor: '#f0f9ff', 
+                    border: '1px solid #0ea5e9', 
+                    borderRadius: '8px',
+                    marginBottom: '1rem'
+                  }}>
+                    <h4 style={{ margin: '0 0 0.5rem 0', color: '#0ea5e9', fontSize: '0.875rem' }}>
+                      Sistema Híbrido de Creación
+                    </h4>
+                    <p style={{ margin: '0', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                      El sistema intentará crear el esquema en el backend externo primero. 
+                      Si no está disponible, usará automáticamente el backend local como fallback.
+                    </p>
+                    <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#64748b' }}>
+                      <div>Backend primario: https://d2o45auo4j2cpf.cloudfront.net</div>
+                      <div>Backend fallback: Local (localhost:3001)</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {mode === 'edit' && (
+                <div className="form-group">
+                  <label className="form-label">DB Connection String</label>
+                  <input 
+                    name="db_connection_url" 
+                    className="form-input" 
+                    defaultValue={client?.db_connection_url} 
+                    placeholder="postgresql://..." 
+                  />
                   <small style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: '0.25rem', display: 'block' }}>
-                    Usando la conexión AWS RDS configurada automáticamente
+                    Solo para referencia. La conexión se gestiona automáticamente.
                   </small>
-                )}
-              </div>
+                </div>
+              )}
               {mode === 'edit' && (
                 <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <input type="checkbox" name="is_active" value="true" defaultChecked={client?.is_active} id="is_active" />

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { LayoutDashboard, Users, Key, Settings, Database } from 'lucide-react';
+import { LayoutDashboard, Users, Key, Settings, Database, Shield } from 'lucide-react';
 import './Sidebar.css';
 
 export default function Sidebar() {
@@ -23,6 +23,10 @@ export default function Sidebar() {
         <Link href="/schemas" className="nav-item">
           <Database size={20} />
           <span>Schemas</span>
+        </Link>
+        <Link href="/admin" className="nav-item">
+          <Shield size={20} />
+          <span>Admin</span>
         </Link>
         <Link href="/licenses" className="nav-item">
           <Key size={20} />

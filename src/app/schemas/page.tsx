@@ -132,12 +132,32 @@ export default function SchemasPage() {
       <header className="page-header">
         <div>
           <h1>Database Schemas</h1>
-          <p>Manage and monitor all database schemas in the system.</p>
+          <p>Manage and monitor all database schemas (Hybrid Backend System).</p>
         </div>
         <button className="btn btn-secondary" onClick={fetchSchemas}>
           <Clock size={18} /> Refresh
         </button>
       </header>
+
+      <div style={{ 
+        padding: '1rem', 
+        backgroundColor: '#f0f9ff', 
+        border: '1px solid #0ea5e9', 
+        borderRadius: '8px',
+        marginBottom: '2rem'
+      }}>
+        <h4 style={{ margin: '0 0 0.5rem 0', color: '#0ea5e9', fontSize: '1rem' }}>
+          Sistema Híbrido de Gestión de Esquemas
+        </h4>
+        <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+          Los esquemas son creados automáticamente al generar nuevos clientes, con alta disponibilidad garantizada.
+        </p>
+        <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', gap: '2rem' }}>
+          <div>Backend primario: <strong>https://d2o45auo4j2cpf.cloudfront.net</strong></div>
+          <div>Backend fallback: <strong>Local (localhost:3001)</strong></div>
+          <div>Estado: <strong style={{ color: '#22c55e' }}>Activo</strong></div>
+        </div>
+      </div>
 
       <div className="stats-grid">
         <div className="stat-card">
