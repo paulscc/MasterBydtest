@@ -14,14 +14,14 @@ const rdsConfig = {
 // GET: Obtener detalles de un schema específico
 export async function GET(
   request: Request,
-  { params }: { params: { schemaName: string } }
+  { params }: { params: Promise<{ schemaName: string }> }
 ) {
   const client = new Client(rdsConfig);
   
   try {
     await client.connect();
     
-    const { schemaName } = params;
+    const { schemaName } = await params;
     
     // Validar que el schema exista
     const schemaCheck = await client.query(`
