@@ -4,16 +4,16 @@ import { supabaseAdmin } from '@/lib/supabase';
 export async function GET() {
   try {
     // Probar conexión básica
-    const { data: connectionTest, error: connectionError } = await supabaseAdmin
-      .from('master_clients')
-      .select('count(*)')
-      .single();
+    const [{ data: users, error: usersError }, { data: clients, error: clientsError }] = await Promise.all([
+      supabaseAdmin.from('master_users').select('*, master_clients!inner(business_name)').order('created_at', { ascending: false }),
+      supabaseAdmin.from('master_clients').select('id, business_name').order('business_name', { ascending: true })
+    ]);
 
-    if (connectionError) {
+    if (usersError || clientsError) {
       return NextResponse.json({
         success: false,
         message: 'Error connecting to Supabase',
-        error: connectionError.message,
+        error: usersError ? usersError.message : (clientsError?.message || 'Unknown error'),
         tables: {
           master_clients: 'error',
           master_users: 'unknown',

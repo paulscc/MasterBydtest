@@ -2,20 +2,24 @@
 -- Derived from script.sql, but focused on the corrected target model.
 -- This file is intentionally preview-oriented: no migration steps and no seed data.
 
-create extension if not exists pgcrypto;
+
 create extension if not exists postgis;
 
 set check_function_bodies = false;
 
 create table users (
-    id uuid primary key default gen_random_uuid(),
-    email varchar(255) not null unique,
+    -- IMPORTANTE: Quitamos el DEFAULT porque el ID vendrá desde la BDD Maestra
+    id uuid primary key, 
+    
+    -- El nombre y perfil se quedan aquí porque son datos operativos del cliente
     name varchar(255) not null,
     phone varchar(50),
     avatar_url varchar(500),
-    hashed_password text,
+    
+    -- ELIMINAMOS email y hashed_password (ya viven en la Maestra)
+    -- Si necesitas el email para reportes, puedes dejarlo, pero nunca el hash
+    
     is_active boolean not null default true,
-    last_login_at timestamptz,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );
@@ -867,15 +871,6 @@ CREATE TABLE IF NOT EXISTS system_config (
 
 -- 2. PERFILES DE USUARIO LOCALES
 -- IMPORTANTE: El ID debe ser el mismo UUID que viene de public.master_users
-CREATE TABLE IF NOT EXISTS users (
-    id uuid PRIMARY KEY, 
-    full_name character varying(255) NOT NULL,
-    phone character varying(50),
-    avatar_url text,
-    role_id uuid, -- Relación con una tabla de roles local si la tienes
-    is_active boolean DEFAULT true,
-    created_at timestamp with time zone DEFAULT now()
-);
 
 -- 3. HISTORIAL DE ACTUALIZACIONES
 -- Para saber qué versiones de la app de escritorio ha pasado este cliente
@@ -1296,6 +1291,11 @@ begin
     return null;
 end;
 $$;
+
+create trigger trg_system_config_updated_at
+before update on system_config
+for each row
+execute function update_modified_column();
 
 create trigger trg_users_updated_at
 before update on users

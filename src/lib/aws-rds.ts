@@ -9,7 +9,7 @@ const AWS_RDS_CONFIG = {
   password: process.env.AWS_RDS_PASSWORD,
   ssl: {
     rejectUnauthorized: false
-  }
+  } // AWS RDS requiere SSL incluso en desarrollo
 };
 
 export class RDSService {

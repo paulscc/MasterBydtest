@@ -1,0 +1,14 @@
+# AWS RDS Configuration
+# Agrega estas variables a tu archivo .env.local
+# Reemplaza TU_PASSWORD_AQUI con tu contraseña real
+
+AWS_RDS_HOST=database-1.c94i28e4k9f0.us-east-2.rds.amazonaws.com
+AWS_RDS_PORT=5432
+AWS_RDS_DATABASE=postgres
+AWS_RDS_USER=postgres
+AWS_RDS_PASSWORD=TU_PASSWORD_AQUI
+
+# Las siguientes variables ya están configuradas en tu sistema:
+# AWS_ACCESS_KEY_ID=***CONFIGURADO***
+# AWS_SECRET_ACCESS_KEY=***CONFIGURADO***
+# AWS_REGION=us-east-2
